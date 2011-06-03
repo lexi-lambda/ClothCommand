@@ -1,0 +1,8 @@
+name: ClothCommand
+main: com.imjake9.clothcommand.ClothCommand
+version: 1.3
+commands:
+    cloth:
+        description: Gives players cloth
+        usage: |
+               '<command>' not available from console.
