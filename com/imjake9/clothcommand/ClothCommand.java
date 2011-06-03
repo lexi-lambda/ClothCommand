@@ -98,7 +98,7 @@ public class ClothCommand extends JavaPlugin {
     }
     
     private void listColors(Player player){
-        String message = ChatColor.RED + "Possible colors names: ";
+        String message = ChatColor.RED + "Possible color names: ";
         for (int i=0; i < woolColors.length; i++){
             message +=  woolColors[i] + ", ";
         }
@@ -123,7 +123,6 @@ public class ClothCommand extends JavaPlugin {
     
     private void loadConfig(){
         Configuration config = this.getConfiguration();
-        initConfig();
         
         woolColors = new String[] {
             config.getString("woolcolor.white", "white"),
@@ -144,40 +143,10 @@ public class ClothCommand extends JavaPlugin {
             config.getString("woolcolor.black", "black")
         };
         
+        config.save();
+        
         requiresOp = config.getBoolean("requiresop", true);
         defaultStackSize = config.getInt("defaultstacksize", 64);
         stackMultiplier = config.getInt("stackmultiplier", 1);
-    }
-    
-    private void initConfig(){
-        
-        this.makeProperty("woolcolor.white", "white");
-        this.makeProperty("woolcolor.orange", "orange");
-        this.makeProperty("woolcolor.magenta", "magenta");
-        this.makeProperty("woolcolor.lightblue", "lightblue");
-        this.makeProperty("woolcolor.yellow", "yellow");
-        this.makeProperty("woolcolor.lime", "lime");
-        this.makeProperty("woolcolor.pink", "pink");
-        this.makeProperty("woolcolor.gray", "gray");
-        this.makeProperty("woolcolor.silver", "silver");
-        this.makeProperty("woolcolor.cyan", "cyan");
-        this.makeProperty("woolcolor.purple", "purple");
-        this.makeProperty("woolcolor.blue", "blue");
-        this.makeProperty("woolcolor.brown", "brown");
-        this.makeProperty("woolcolor.green", "green");
-        this.makeProperty("woolcolor.red", "red");
-        this.makeProperty("woolcolor.black", "black");
-        
-        this.makeProperty("requiresop", true);
-        this.makeProperty("defaultstacksize", 64);
-        this.makeProperty("stackmultiplier", 1);
-        
-    }
-    
-    private void makeProperty(String property, Object value){
-        if(this.getConfiguration().getProperty(property) == null){
-            this.getConfiguration().setProperty(property, value);
-            this.getConfiguration().save();
-        }
     }
 }
