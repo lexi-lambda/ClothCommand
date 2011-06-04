@@ -43,7 +43,7 @@ public class ClothCommand extends JavaPlugin {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
         if(!(sender instanceof Player) && args.length != 3) return false;
-        if(commandLabel.equalsIgnoreCase("cloth")){
+        if(commandLabel.equalsIgnoreCase("cloth") || commandLabel.equalsIgnoreCase("wool")){
             this.processCommand(sender, args);
             return true;
         } else return false;
@@ -53,15 +53,15 @@ public class ClothCommand extends JavaPlugin {
         if(usingPermissions && player instanceof Player)
             if(!permissions.has((Player)player, "ClothCommand.cloth")) return;
         
-        if(!player.isOp() && !usingPermissions && requiresOp) return;
+        if(!player.isOp() && !usingPermissions && requiresOp && player instanceof Player) return;
         
         if(args.length == 1){
             if(args[0].equalsIgnoreCase("list")) listColors(player);
-            this.giveCloth((Player)player, args[0], defaultStackSize);
+            this.validateGive(player, (Player)player, args[0], defaultStackSize);
             return;
         } else if(args.length == 2){
             if(new Scanner(args[1]).hasNextInt()){
-                this.giveCloth((Player)player, args[0], Integer.parseInt(args[1]) * stackMultiplier);
+                this.validateGive(player, (Player)player, args[0], Integer.parseInt(args[1]) * stackMultiplier);
                 return;
             }
         } else if (args.length == 3){
@@ -72,7 +72,7 @@ public class ClothCommand extends JavaPlugin {
             }
             
             if(new Scanner(args[1]).hasNextInt()){
-                this.giveCloth(reciever, args[0], Integer.parseInt(args[1]) * stackMultiplier);
+                this.validateGive(player, reciever, args[0], Integer.parseInt(args[1]) * stackMultiplier);
             }
             return;
         }
@@ -81,19 +81,29 @@ public class ClothCommand extends JavaPlugin {
         player.sendMessage(ChatColor.RED + "/cloth list");
     }
     
-    public void giveCloth(Player player, String color, int amt){
-        if(color.equals("all")) this.giveAll(player, amt);
-        if(amt > 0){
+    public void validateGive(CommandSender sender, Player player, String color, int amt) {
+        if(amt == -1) {
+            if(!(sender instanceof Player)) giveCloth(sender, player, color, amt);
+            else if(usingPermissions) {
+                if(permissions.has((Player)sender, "ClothCommand.cloth.unlimited")) giveCloth(sender, player, color, amt);
+            } else if(player.isOp() || !requiresOp) giveCloth(sender, player, color, amt);
+        } else if(amt > 0) giveCloth(sender, player, color, amt);
+        else sender.sendMessage(ChatColor.RED + "[amount] must be greater than zero.");
+    }
+    
+    public void giveCloth(CommandSender sender, Player player, String color, int amt){
+        if(color.equals("all")) this.giveAll(sender, player, amt);
+        else {
             int colorID = Arrays.asList(woolColors).indexOf(color);
             if(colorID != -1){
                 player.getInventory().addItem(new ItemStack(Material.WOOL, amt, (byte)colorID));
-            }
-        } else player.sendMessage(ChatColor.RED + "[amount] must be greater than zero.");
+            } else sender.sendMessage(ChatColor.RED + "Invalid color. Type /cloth list for a list of colors.");
+        }
     }
     
-    private void giveAll(Player player, int amt){
+    private void giveAll(CommandSender sender, Player player, int amt){
         for(String color : woolColors){
-            this.giveCloth(player, color, amt);
+            this.giveCloth(sender, player, color, amt);
         }
     }
     
