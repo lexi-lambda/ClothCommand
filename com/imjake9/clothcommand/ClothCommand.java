@@ -42,26 +42,26 @@ public class ClothCommand extends JavaPlugin {
     
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
-        if(!(sender instanceof Player)) return false;
+        if(!(sender instanceof Player) && args.length != 3) return false;
         if(commandLabel.equalsIgnoreCase("cloth")){
-            this.processCommand((Player)sender, args);
+            this.processCommand(sender, args);
             return true;
         } else return false;
     }
     
-    public void processCommand(Player player, String[] args){
-        if(usingPermissions)
-            if(!permissions.has(player, "ClothCommand.cloth")) return;
+    public void processCommand(CommandSender player, String[] args){
+        if(usingPermissions && player instanceof Player)
+            if(!permissions.has((Player)player, "ClothCommand.cloth")) return;
         
         if(!player.isOp() && !usingPermissions && requiresOp) return;
         
         if(args.length == 1){
             if(args[0].equalsIgnoreCase("list")) listColors(player);
-            this.giveCloth(player, args[0], defaultStackSize);
+            this.giveCloth((Player)player, args[0], defaultStackSize);
             return;
         } else if(args.length == 2){
             if(new Scanner(args[1]).hasNextInt()){
-                this.giveCloth(player, args[0], Integer.parseInt(args[1]) * stackMultiplier);
+                this.giveCloth((Player)player, args[0], Integer.parseInt(args[1]) * stackMultiplier);
                 return;
             }
         } else if (args.length == 3){
@@ -97,7 +97,7 @@ public class ClothCommand extends JavaPlugin {
         }
     }
     
-    private void listColors(Player player){
+    private void listColors(CommandSender player){
         String message = ChatColor.RED + "Possible color names: ";
         for (int i=0; i < woolColors.length; i++){
             message +=  woolColors[i] + ", ";
