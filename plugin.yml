@@ -1,6 +1,6 @@
 name: ClothCommand
 main: com.imjake9.clothcommand.ClothCommand
-version: 1.4
+version: 1.5
 commands:
     cloth:
         description: Gives players cloth

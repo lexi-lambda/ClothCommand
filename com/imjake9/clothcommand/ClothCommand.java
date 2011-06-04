@@ -29,13 +29,13 @@ public class ClothCommand extends JavaPlugin {
     @Override
     @SuppressWarnings("LoggerStringConcat")
     public void onDisable() {
-        log.info(this.getDescription().getName() + " v" + this.getDescription().getVersion() +  " disabled.");
+        log.info("[ClothCommand] " + this.getDescription().getName() + " v" + this.getDescription().getVersion() +  " disabled.");
     }
 
     @Override
     @SuppressWarnings("LoggerStringConcat")
     public void onEnable() {
-        log.info(this.getDescription().getName() + " v" + this.getDescription().getVersion() + " enabled.");
+        log.info("[ClothCommand] " + this.getDescription().getName() + " v" + this.getDescription().getVersion() + " enabled.");
         this.setupPermissions();
         this.loadConfig();
     }
@@ -43,10 +43,8 @@ public class ClothCommand extends JavaPlugin {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args){
         if(!(sender instanceof Player) && args.length != 3) return false;
-        if(commandLabel.equalsIgnoreCase("cloth") || commandLabel.equalsIgnoreCase("wool")){
-            this.processCommand(sender, args);
-            return true;
-        } else return false;
+        this.processCommand(sender, args);
+        return true;
     }
     
     public void processCommand(CommandSender player, String[] args){
@@ -123,7 +121,7 @@ public class ClothCommand extends JavaPlugin {
            if(plugin != null){
                permissions = ((Permissions)plugin).getHandler();
            } else {
-               log.info("Permissions not detected. Defaulting to OP restrictions.");
+               log.info("[ClothCommand] Permissions not detected. Defaulting to OP restrictions.");
                usingPermissions = false;
                return;
            }
@@ -153,10 +151,10 @@ public class ClothCommand extends JavaPlugin {
             config.getString("woolcolor.black", "black")
         };
         
-        config.save();
-        
         requiresOp = config.getBoolean("requiresop", true);
         defaultStackSize = config.getInt("defaultstacksize", 64);
         stackMultiplier = config.getInt("stackmultiplier", 1);
+        
+        config.save();
     }
 }
