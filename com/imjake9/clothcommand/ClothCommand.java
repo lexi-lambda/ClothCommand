@@ -11,7 +11,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 
@@ -20,9 +23,9 @@ public class ClothCommand extends JavaPlugin {
     private static final Logger log = Logger.getLogger("Minecraft");
     private String[] woolColors;
     private boolean requiresOp;
-    private boolean usingPermissions;
     private int defaultStackSize;
     private int stackMultiplier;
+    private boolean useBukkitPermissions = true;
     
     public static PermissionHandler permissions;
 
@@ -36,8 +39,9 @@ public class ClothCommand extends JavaPlugin {
     @SuppressWarnings("LoggerStringConcat")
     public void onEnable() {
         log.info("[ClothCommand] " + this.getDescription().getName() + " v" + this.getDescription().getVersion() + " enabled.");
-        this.setupPermissions();
         this.loadConfig();
+        if(!useBukkitPermissions)this.setupPermissions();
+        this.registerPermissions();
     }
     
     @Override
@@ -48,13 +52,13 @@ public class ClothCommand extends JavaPlugin {
     }
     
     public void processCommand(CommandSender player, String[] args){
-        if(usingPermissions && player instanceof Player)
-            if(!permissions.has((Player)player, "ClothCommand.cloth")) return;
-        
-        if(!player.isOp() && !usingPermissions && requiresOp && player instanceof Player) return;
+        if(!hasPermission(player, "ClothCommand.cloth")) return;
         
         if(args.length == 1){
-            if(args[0].equalsIgnoreCase("list")) listColors(player);
+            if(args[0].equalsIgnoreCase("list")) {
+                listColors(player);
+                return;
+            }
             this.validateGive(player, (Player)player, args[0], defaultStackSize);
             return;
         } else if(args.length == 2){
@@ -63,6 +67,7 @@ public class ClothCommand extends JavaPlugin {
                 return;
             }
         } else if (args.length == 3){
+            if(!hasPermission(player, "ClothCommand.cloth.player")) return;
             Player reciever = this.getServer().getPlayer(args[2]);
             if(reciever == null){
                 player.sendMessage(ChatColor.RED + "Couldn't find player\"" + args[2] + "\".");
@@ -81,10 +86,10 @@ public class ClothCommand extends JavaPlugin {
     
     public void validateGive(CommandSender sender, Player player, String color, int amt) {
         if(amt == -1) {
-            if(!(sender instanceof Player)) giveCloth(sender, player, color, amt);
-            else if(usingPermissions) {
-                if(permissions.has((Player)sender, "ClothCommand.cloth.unlimited")) giveCloth(sender, player, color, amt);
-            } else if(player.isOp() || !requiresOp) giveCloth(sender, player, color, amt);
+            if(!hasPermission(player, "ClothCommand.cloth.unlimited")) {
+                sender.sendMessage(ChatColor.RED + "[amount] must be greater than zero.");
+                return;
+            } else giveCloth(sender, player, color, amt);
         } else if(amt > 0) giveCloth(sender, player, color, amt);
         else sender.sendMessage(ChatColor.RED + "[amount] must be greater than zero.");
     }
@@ -121,12 +126,10 @@ public class ClothCommand extends JavaPlugin {
            if(plugin != null){
                permissions = ((Permissions)plugin).getHandler();
            } else {
-               log.info("[ClothCommand] Permissions not detected. Defaulting to OP restrictions.");
-               usingPermissions = false;
+               log.info("[ClothCommand] Permissions not detected. Defaulting to Bukkit permissions.");
                return;
            }
         }
-        usingPermissions = true;
     }
     
     private void loadConfig(){
@@ -154,7 +157,26 @@ public class ClothCommand extends JavaPlugin {
         requiresOp = config.getBoolean("requiresop", true);
         defaultStackSize = config.getInt("defaultstacksize", 64);
         stackMultiplier = config.getInt("stackmultiplier", 1);
+        useBukkitPermissions = config.getBoolean("usebukkitpermissions", (config.getProperty("requiresop") == null));
         
         config.save();
+    }
+    
+    private void registerPermissions() {
+        PluginManager pm = this.getServer().getPluginManager();
+        PermissionDefault op = (requiresOp) ? PermissionDefault.OP : PermissionDefault.TRUE;
+        pm.addPermission(new Permission("ClothCommand.cloth", op));
+        pm.addPermission(new Permission("ClothCommand.cloth.player", op));
+        pm.addPermission(new Permission("ClothCommand.cloth.unlimited", op));
+    }
+    
+    public boolean hasPermission(CommandSender sender, String permission) {
+        if(!(sender instanceof Player)) return true;
+        Player player = (Player)sender;
+        if(useBukkitPermissions || permissions == null) {
+            return player.hasPermission(permission);
+        } else {
+            return permissions.has(player, permission);
+        }
     }
 }

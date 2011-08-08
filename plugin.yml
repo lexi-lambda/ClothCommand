@@ -1,9 +1,17 @@
 name: ClothCommand
 main: com.imjake9.clothcommand.ClothCommand
-version: 1.5
+version: 1.6
 commands:
-    cloth:
-        description: Gives players cloth
-        usage: |
-               /<command> <color> [amount] [player]
-        aliases: ['wool']
+  cloth:
+    description: Gives players cloth
+    usage: |
+           /<command> <color> [amount] [player]
+    aliases: ['wool']
+
+permissions:
+  ClothCommand.*:
+    description: Gives access to all ClothCommand permissions.
+    children:
+      ClothCommand.cloth: true
+      ClothCommand.cloth.player: true
+      ClothCommand.cloth.unlimited: true
